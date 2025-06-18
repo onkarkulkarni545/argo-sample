@@ -1,0 +1,61 @@
+# autokitteh.yaml
+connections:
+  github:
+    type: github
+    token: ${{ env.autokitteh}}
+  dockerhub:
+    type: docker
+    username: ${{ env.DOCKERHUB_USERNAME }}
+    password: ${{ env.DOCKERHUB_TOKEN }}
+
+triggers:
+  - type: github
+    event: push
+    repo: onkarkulkarni545/argo-sample
+    branch: main
+
+workflows:
+  build-and-push:
+    steps:
+      - name: checkout
+        action: github/checkout
+        params:
+          repo: onkarkulkarni545/argo-sample
+          branch: main
+      - name: build
+        action: docker/build
+        params:
+          dockerfile: Dockerfile
+          context: .
+          image: docker.io/onkarkulkarni545/argo-sample:${{ github.sha }}
+      - name: push
+        action: docker/push
+        params:
+          image: docker.io/onkarkulkarni545/argo-sample:${{ github.sha }}
+      - name: update-manifest
+        action: github/update-file
+        params:
+          repo: onkarkulkarni545/argo-sample
+          path: manifests/deployment.yaml
+          content: |
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: argo-sample
+              namespace: default
+            spec:
+              replicas: 1
+              selector:
+                matchLabels:
+                  app: argo-sample
+              template:
+                metadata:
+                  labels:
+                    app: argo-sample
+                spec:
+                  containers:
+                  - name: argo-sample
+                    image: docker.io/onkarkulkarni545/argo-sample:${{ github.sha }}
+                    ports:
+                    - containerPort: 8080
+          commit_message: "Update image tag to ${{ github.sha }}"
