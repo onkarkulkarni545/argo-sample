@@ -1,4 +1,5 @@
 # autokitteh.yaml
+version : v1
 connections:
   github:
     type: github
