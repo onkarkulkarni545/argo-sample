@@ -5,8 +5,8 @@ connections:
     token: ${{ env.autokitteh}}
   dockerhub:
     type: docker
-    username: ${{ env.DOCKERHUB_USERNAME }}
-    password: ${{ env.DOCKERHUB_TOKEN }}
+    username: ${{ env.DOCKER_USERNAME }}
+    password: ${{ env.DOCKER_PASSWORD }}
 
 triggers:
   - type: github
